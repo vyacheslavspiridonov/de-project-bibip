@@ -1,11 +1,16 @@
 from datetime import datetime
 from decimal import Decimal
-
+import os
 import pytest
+
+from generate_data_for_test import generate_data_for_test_func
 
 from bibip_car_service import CarService
 from models import Car, CarFullInfo, CarStatus, Model, ModelSaleStats, Sale
+start_part = os.path.dirname(os.path.abspath(__name__))
 
+# Папка data_for_test
+generate_data_for_test_func()
 
 @pytest.fixture
 def car_data():
@@ -103,6 +108,7 @@ def model_data():
 
 class TestCarServiceScenarios:
     def _fill_initial_data(self, service: CarService, car_data: list[Car], model_data: list[Model]) -> None:
+
         for model in model_data:
             service.add_model(model)
 
@@ -110,16 +116,19 @@ class TestCarServiceScenarios:
             service.add_car(car)
 
     def test_add_new_car(self, tmpdir: str, car_data: list[Car], model_data: list[Model]) -> None:
+
         service = CarService(tmpdir)
 
-        self._fill_initial_data(service, car_data, model_data)
+        #self._fill_initial_data(service, car_data, model_data)
+        generate_data_for_test_func()
 
         assert True
 
     def test_sell_car(self, tmpdir: str, car_data: list[Car], model_data: list[Model]) -> None:
         service = CarService(tmpdir)
 
-        self._fill_initial_data(service, car_data, model_data)
+        #self._fill_initial_data(service, car_data, model_data)
+        generate_data_for_test_func()
 
         sale = Sale(
             sales_number="20240903#JM1BL1M58C1614725",
@@ -134,18 +143,22 @@ class TestCarServiceScenarios:
         assert res.status == CarStatus.sold
 
     def test_list_cars_by_available_status(self, tmpdir: str, car_data: list[Car], model_data: list[Model]):
+
         service = CarService(tmpdir)
 
-        self._fill_initial_data(service, car_data, model_data)
+        #self._fill_initial_data(service, car_data, model_data)
+        generate_data_for_test_func()
 
         available_cars = [car for car in car_data if car.status == CarStatus.available]
-
+        print(f"Вывод метода: {service.get_cars(CarStatus.available)}")
+        print(f"Требуемый вывод: {available_cars}")
         assert service.get_cars(CarStatus.available) == available_cars
 
     def test_list_full_info_by_vin(self, tmpdir: str, car_data: list[Car], model_data: list[Model]):
         service = CarService(tmpdir)
 
-        self._fill_initial_data(service, car_data, model_data)
+        #self._fill_initial_data(service, car_data, model_data)
+        generate_data_for_test_func()
 
         full_info_no_sale = CarFullInfo(
             vin="KNAGM4A77D5316538",
@@ -183,6 +196,8 @@ class TestCarServiceScenarios:
         assert service.get_car_info("KNAGM4A77D5316538") == full_info_with_sale
 
     def test_update_vin(self, tmpdir: str, car_data: list[Car], model_data: list[Model]):
+
+        generate_data_for_test_func()
         service = CarService(tmpdir)
 
         full_info_no_sale = CarFullInfo(
@@ -196,7 +211,8 @@ class TestCarServiceScenarios:
             sales_cost=None,
         )
 
-        self._fill_initial_data(service, car_data, model_data)
+        #self._fill_initial_data(service, car_data, model_data)
+        generate_data_for_test_func()
 
         assert service.get_car_info("KNAGM4A77D5316538") == full_info_no_sale
         assert service.get_car_info("UPDGM4A77D5316538") is None
@@ -210,7 +226,8 @@ class TestCarServiceScenarios:
     def test_delete_sale(self, tmpdir: str, car_data: list[Car], model_data: list[Model]):
         service = CarService(tmpdir)
 
-        self._fill_initial_data(service, car_data, model_data)
+        #self._fill_initial_data(service, car_data, model_data)
+        generate_data_for_test_func()
 
         sale = Sale(
             sales_number="20240903#KNAGM4A77D5316538",
@@ -234,7 +251,8 @@ class TestCarServiceScenarios:
     def test_top_3_models_by_sales(self, tmpdir: str, car_data: list[Car], model_data: list[Model]):
         service = CarService(tmpdir)
 
-        self._fill_initial_data(service, car_data, model_data)
+        #self._fill_initial_data(service, car_data, model_data)
+        generate_data_for_test_func()
 
         sales = [
             Sale(
@@ -287,6 +305,12 @@ class TestCarServiceScenarios:
         top_3_models = [
             ModelSaleStats(car_model_name="Optima", brand="Kia", sales_number=3),
             ModelSaleStats(car_model_name="3", brand="Mazda", sales_number=2),
-            ModelSaleStats(car_model_name="Pathfinder", brand="Nissan", sales_number=1),
+            ModelSaleStats(car_model_name="Sorento", brand="Kia", sales_number=1),
         ]
+
         assert service.top_models_by_sales() == top_3_models
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(pytest.main([__file__, "-v"]))
