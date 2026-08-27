@@ -60,8 +60,8 @@
 
 1. Клонирование репозитория:
 ```bash
-git clone https://github.com/your-repo/autotrade
-cd autotrade
+git clone https://github.com/vyacheslavspiridonov/Car_DataBase_Service
+cd Car_DataBase_Service
 ```
 
 2. Установка зависимостей:
